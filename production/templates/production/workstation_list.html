@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}İş İstasyonları{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-building"></i> İş İstasyonları</h4>
+    <a href="{% url 'workstation_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Yeni İstasyon
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kod</th>
+                        <th>Ad</th>
+                        <th>Açıklama</th>
+                        <th>Durum</th>
+                        <th style="width:60px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ws in workstations %}
+                    <tr>
+                        <td><strong>{{ ws.code }}</strong></td>
+                        <td>{{ ws.name }}</td>
+                        <td>{{ ws.description|default:"-" }}</td>
+                        <td>
+                            {% if ws.is_active %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Pasif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'workstation_edit' ws.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">Kayıt bulunamadı.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

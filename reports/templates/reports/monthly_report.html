@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Aylık Rapor{% endblock %}
+
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-bar-chart"></i> Aylık Rapor</h4>
+
+<!-- Filtre -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-auto">
+                <label class="form-label">Yıl</label>
+                <select name="year" class="form-select">
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label">Ay</label>
+                <select name="month" class="form-select">
+                    {% for m in months %}
+                    <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel"></i> Filtrele
+                </button>
+            </div>
+            <div class="col-auto">
+                <a href="?year={{ year }}&month={{ month }}&export=csv" class="btn btn-outline-success">
+                    <i class="bi bi-download"></i> CSV İndir
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- İşçi Bazlı İşçilik -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">İşçi Bazlı İşçilik</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Sicil</th><th>Ad Soyad</th><th>Süre (dk)</th><th>Üretim</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for row in labor_by_worker %}
+                            <tr>
+                                <td>{{ row.worker__profile__employee_id }}</td>
+                                <td>{{ row.worker__first_name }} {{ row.worker__last_name }}</td>
+                                <td>{{ row.total_duration|default:0 }}</td>
+                                <td>{{ row.total_produced|default:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-2">Veri bulunamadı</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duruş Nedeni Bazlı -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">Duruş Nedeni Bazlı</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Neden</th><th>Toplam Süre (dk)</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for row in downtime_by_reason %}
+                            <tr>
+                                <td>{{ row.reason__name }}</td>
+                                <td>{{ row.total_duration|default:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-muted py-2">Veri bulunamadı</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İstasyon Bazlı Duruş -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">İstasyon Bazlı Duruş</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Kod</th><th>İstasyon</th><th>Toplam Süre (dk)</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for row in downtime_by_workstation %}
+                            <tr>
+                                <td>{{ row.workstation__code }}</td>
+                                <td>{{ row.workstation__name }}</td>
+                                <td>{{ row.total_duration|default:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted py-2">Veri bulunamadı</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İş Emri Bazlı İşçilik -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">İş Emri Bazlı İşçilik</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>İş Emri</th><th>Ürün</th><th>Süre (dk)</th><th>Üretim</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for row in labor_by_workorder %}
+                            <tr>
+                                <td>{{ row.work_order__number }}</td>
+                                <td>{{ row.work_order__product_name }}</td>
+                                <td>{{ row.total_duration|default:0 }}</td>
+                                <td>{{ row.total_produced|default:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-2">Veri bulunamadı</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

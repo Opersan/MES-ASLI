@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Üretim İzleme{% endblock %}
+
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h4>
+
+{% if profile.role == 'ADMIN' %}
+<!-- ═══ ADMIN DASHBOARD ═══ -->
+<div class="row g-3 mb-4">
+    <div class="col-md col-6">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small">Toplam Kullanıcı</div>
+                        <h3 class="mb-0">{{ total_users }}</h3>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md col-6">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small">Toplam İş Emri</div>
+                        <h3 class="mb-0">{{ total_work_orders }}</h3>
+                    </div>
+                    <i class="bi bi-clipboard-data fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md col-6">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small">Aktif İş Emri</div>
+                        <h3 class="mb-0">{{ active_work_orders }}</h3>
+                    </div>
+                    <i class="bi bi-play-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md col-6">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small">Açık Duruş</div>
+                        <h3 class="mb-0">{{ open_downtimes }}</h3>
+                    </div>
+                    <i class="bi bi-pause-circle fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md col-6">
+        <div class="card stat-card bg-secondary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small">Bu Ay İşçilik</div>
+                        <h3 class="mb-0">{{ month_labor_minutes }} dk</h3>
+                    </div>
+                    <i class="bi bi-clock fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% elif profile.role == 'MANAGER' %}
+<!-- ═══ MANAGER DASHBOARD ═══ -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="text-white-50 small">Ekip Üyesi</div>
+                <h3 class="mb-0">{{ team_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="text-white-50 small">Aktif İş Emri</div>
+                <h3 class="mb-0">{{ active_work_orders }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="text-white-50 small">Bu Ay Üretim</div>
+                <h3 class="mb-0">{{ month_produced }} adet</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="small">Bu Ay Duruş</div>
+                <h3 class="mb-0">{{ month_downtime_minutes }} dk</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_labor %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h6 class="mb-0"><i class="bi bi-clock-history"></i> Son 10 İşçilik Kaydı</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>İşçi</th>
+                        <th>İş Emri</th>
+                        <th>İstasyon</th>
+                        <th>Tarih</th>
+                        <th>Süre</th>
+                        <th>Üretim</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in recent_labor %}
+                    <tr>
+                        <td>{{ entry.worker.get_full_name }}</td>
+                        <td><a href="{% url 'workorder_detail' entry.work_order.pk %}">{{ entry.work_order.number }}</a></td>
+                        <td>{{ entry.workstation.name }}</td>
+                        <td>{{ entry.date|date:"d.m.Y" }}</td>
+                        <td>{{ entry.duration_display }}</td>
+                        <td>{{ entry.produced_quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center text-muted py-4">
+        Henüz ekibinize ait işçilik kaydı bulunmamaktadır.
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

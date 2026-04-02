@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}İş Emri - {{ order.number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-clipboard-data"></i> {{ order.number }}</h4>
+    <div>
+        {% if profile.role == 'ADMIN' or profile.role == 'MANAGER' %}
+        <a href="{% url 'workorder_edit' order.pk %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Düzenle
+        </a>
+        {% endif %}
+        <a href="{% url 'workorder_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Geri
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">Genel Bilgiler</h6></div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr><th style="width:35%">Numara</th><td>{{ order.number }}</td></tr>
+                    <tr><th>Ürün Adı</th><td>{{ order.product_name }}</td></tr>
+                    <tr><th>Açıklama</th><td>{{ order.description|default:"-" }}</td></tr>
+                    <tr><th>Planlanan Adet</th><td>{{ order.planned_quantity }}</td></tr>
+                    <tr><th>Üretilen Adet</th><td><strong>{{ total_produced }}</strong></td></tr>
+                    <tr><th>Başlangıç</th><td>{{ order.start_date|date:"d.m.Y" }}</td></tr>
+                    <tr><th>Bitiş</th><td>{{ order.end_date|date:"d.m.Y" }}</td></tr>
+                    <tr>
+                        <th>Durum</th>
+                        <td>
+                            {% if order.status == 'ACTIVE' %}<span class="badge bg-success">Aktif</span>
+                            {% elif order.status == 'DRAFT' %}<span class="badge bg-secondary">Taslak</span>
+                            {% elif order.status == 'COMPLETED' %}<span class="badge bg-info">Tamamlandı</span>
+                            {% else %}<span class="badge bg-danger">İptal</span>{% endif %}
+                        </td>
+                    </tr>
+                    <tr><th>İş İstasyonu</th><td>{{ order.workstation }}</td></tr>
+                    <tr><th>Oluşturan</th><td>{{ order.created_by.get_full_name }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card mb-3">
+            <div class="card-header bg-white"><h6 class="mb-0">Atanan İşçiler</h6></div>
+            <div class="card-body">
+                {% for worker in order.assigned_workers.all %}
+                <span class="badge bg-primary me-1 mb-1">
+                    <i class="bi bi-person"></i> {{ worker.get_full_name }}
+                </span>
+                {% empty %}
+                <p class="text-muted mb-0">Henüz işçi atanmamış.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-white"><h6 class="mb-0">Özet</h6></div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr><th>Toplam İşçilik</th><td>{{ total_labor_minutes }} dakika</td></tr>
+                    <tr><th>Toplam Üretim</th><td>{{ total_produced }} adet</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İşçilik Kayıtları -->
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <h6 class="mb-0"><i class="bi bi-clock-history"></i> İşçilik Kayıtları</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>İşçi</th>
+                        <th>Tarih</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th>Süre</th>
+                        <th>Üretim</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in labor_entries %}
+                    <tr>
+                        <td>{{ e.worker.get_full_name }}</td>
+                        <td>{{ e.date|date:"d.m.Y" }}</td>
+                        <td>{{ e.start_time|date:"H:i" }}</td>
+                        <td>{% if e.end_time %}{{ e.end_time|date:"H:i" }}{% else %}-{% endif %}</td>
+                        <td>{{ e.duration_display }}</td>
+                        <td>{{ e.produced_quantity }}</td>
+                        <td>{{ e.description|default:"-"|truncatewords:8 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-3">Kayıt yok.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Duruş Kayıtları -->
+<div class="card">
+    <div class="card-header bg-white">
+        <h6 class="mb-0"><i class="bi bi-pause-circle"></i> Duruş Kayıtları</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>İşçi</th>
+                        <th>Neden</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th>Süre</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in downtime_records %}
+                    <tr>
+                        <td>{{ r.worker.get_full_name }}</td>
+                        <td>{{ r.reason.name }}</td>
+                        <td>{{ r.start_time|date:"d.m.Y H:i" }}</td>
+                        <td>{% if r.end_time %}{{ r.end_time|date:"d.m.Y H:i" }}{% else %}-{% endif %}</td>
+                        <td>{% if r.status == 'CLOSED' %}{{ r.duration_display }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if r.status == 'OPEN' %}<span class="badge bg-warning text-dark">Açık</span>
+                            {% else %}<span class="badge bg-secondary">Kapalı</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-3">Kayıt yok.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

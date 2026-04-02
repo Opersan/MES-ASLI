@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}İş Emirleri{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-clipboard-data"></i> İş Emirleri</h4>
+    {% if profile.role == 'ADMIN' or profile.role == 'MANAGER' %}
+    <a href="{% url 'workorder_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Yeni İş Emri
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Numara</th>
+                        <th>Ürün</th>
+                        <th>İstasyon</th>
+                        <th>Planlanan</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th>Durum</th>
+                        <th style="width:60px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'workorder_detail' order.pk %}">
+                                <strong>{{ order.number }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ order.product_name }}</td>
+                        <td>{{ order.workstation.name }}</td>
+                        <td>{{ order.planned_quantity }}</td>
+                        <td>{{ order.start_date|date:"d.m.Y" }}</td>
+                        <td>{{ order.end_date|date:"d.m.Y" }}</td>
+                        <td>
+                            {% if order.status == 'ACTIVE' %}
+                            <span class="badge bg-success">Aktif</span>
+                            {% elif order.status == 'DRAFT' %}
+                            <span class="badge bg-secondary">Taslak</span>
+                            {% elif order.status == 'COMPLETED' %}
+                            <span class="badge bg-info">Tamamlandı</span>
+                            {% else %}
+                            <span class="badge bg-danger">İptal</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if profile.role == 'ADMIN' or profile.role == 'MANAGER' %}
+                            <a href="{% url 'workorder_edit' order.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-3">Kayıt bulunamadı.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

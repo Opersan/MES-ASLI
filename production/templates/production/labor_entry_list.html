@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}İşçilik Kayıtları{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-clock-history"></i> İşçilik Kayıtları</h4>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        {% if profile.role != 'WORKER' %}<th>İşçi</th>{% endif %}
+                        <th>İş Emri</th>
+                        <th>İstasyon</th>
+                        <th>Tarih</th>
+                        <th>Başlangıç</th>
+                        <th>Bitiş</th>
+                        <th>Süre</th>
+                        <th>Üretim</th>
+                        <th>Durum</th>
+                        <th>Açıklama</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in entries %}
+                    <tr>
+                        {% if profile.role != 'WORKER' %}<td>{{ e.worker.get_full_name }}</td>{% endif %}
+                        <td>
+                            <a href="{% url 'workorder_detail' e.work_order.pk %}">{{ e.work_order.number }}</a>
+                        </td>
+                        <td>{{ e.workstation.name }}</td>
+                        <td>{{ e.date|date:"d.m.Y" }}</td>
+                        <td>{{ e.start_time|date:"H:i" }}</td>
+                        <td>{% if e.end_time %}{{ e.end_time|date:"H:i" }}{% else %}-{% endif %}</td>
+                        <td>{{ e.duration_display }}</td>
+                        <td>{{ e.produced_quantity }}</td>
+                        <td>
+                            {% if e.status == 'ACTIVE' %}<span class="badge bg-success">Aktif</span>
+                            {% else %}<span class="badge bg-secondary">Tamamlandı</span>{% endif %}
+                        </td>
+                        <td>{{ e.description|default:"-"|truncatewords:5 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10"
+                            class="text-center text-muted py-3">
+                            Kayıt bulunamadı.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
