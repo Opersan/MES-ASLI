@@ -188,7 +188,7 @@ PythonAnywhere Web sekmesinde **WSGI configuration file** bağlantısına tıkla
 import os
 import sys
 
-# Proje dizinini ayarlayın (KULLANICI yerine kendi kullanıcı adınızı yazın)
+# Proje dizinini ayarlayın (KULLANICI yerine kendi PythonAnywhere kullanıcı adınızı yazın)
 project_home = '/home/KULLANICI/MES-ASLI'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
